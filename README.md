@@ -2,8 +2,8 @@
 
 An end-to-end deep learning project for three-class BI-RADS classification of
 digital mammograms from the INbreast dataset. The repository combines image
-preparation, reproducible patient-wise data splitting, preprocessing, transfer
-learning, and multiclass evaluation.
+preparation, objective image-quality assessment, reproducible patient-wise data
+splitting, preprocessing, transfer learning, and multiclass evaluation.
 
 ## Project scope
 
@@ -28,11 +28,13 @@ The classification targets are grouped as follows:
 ## Methodology
 
 1. Convert DICOM mammograms to lossless PNG images.
-2. Apply optional denoising and contrast enhancement.
-3. Group images by patient before creating train, validation, and test folds.
-4. Apply random augmentation only to the training split.
-5. Train a classifier head and then fine-tune the upper backbone layers.
-6. Evaluate the selected model once on the untouched test split using accuracy,
+2. Simulate salt-and-pepper and Gaussian noise, apply median, Gaussian, and
+   Wiener filters, and compare the combinations with BRISQUE, PIQE, and NIQE.
+3. Apply the selected denoising method and optional contrast enhancement.
+4. Group images by patient before creating train, validation, and test folds.
+5. Apply random augmentation only to the training split.
+6. Train a classifier head and then fine-tune the upper backbone layers.
+7. Evaluate the selected model once on the untouched test split using accuracy,
    macro F1, sensitivity, specificity, confusion matrices, and one-vs-rest ROC
    curves.
 
@@ -50,6 +52,8 @@ of overly optimistic evaluation.
 │   ├── preprocess_images.py
 │   ├── train.py
 │   └── evaluate.py
+├── matlab/
+│   └── evaluate_filter_pairs.m
 ├── src/mammography/
 │   ├── data.py
 │   ├── labels.py
@@ -99,14 +103,29 @@ If the source files are DICOM images, convert them first:
 python scripts/convert_dicom.py --input-dir data/raw_dicom --output-dir data/raw
 ```
 
+### Metric-based filter selection
+
+The original project selected a noise-filter combination by comparing median,
+Gaussian, and Wiener denoising under controlled salt-and-pepper and Gaussian
+noise. Place representative images in `data/metric_images/` and run:
+
+```matlab
+run('matlab/evaluate_filter_pairs.m')
+```
+
+The script calculates BRISQUE, PIQE, and NIQE for every variant. Lower values
+indicate better perceived image quality for all three metrics. Per-image scores,
+aggregate results, and a normalized filter-pair ranking are written to
+`results/filter_selection/`.
+
 Optional preprocessing can be applied without adding synthetic noise by
-default:
+default. Replace `wiener` below if another filter ranks first in your analysis:
 
 ```bash
 python scripts/preprocess_images.py \
   --input-dir data/raw \
   --output-dir data/preprocessed \
-  --denoise nlm \
+  --denoise wiener \
   --enhance clahe
 ```
 
@@ -160,4 +179,3 @@ patient-wise split before being reported as benchmark results.
   excluded from version control.
 - The code is intended for research and educational use, not clinical decision
   making.
-

@@ -23,7 +23,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--denoise",
         choices=("none", "median", "gaussian", "bilateral", "nlm", "wiener"),
-        default="nlm",
+        required=True,
     )
     parser.add_argument(
         "--enhance", choices=("none", "clahe", "histogram"), default="clahe"
@@ -70,4 +70,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

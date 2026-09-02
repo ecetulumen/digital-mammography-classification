@@ -66,7 +66,7 @@ def enhance_contrast(image: np.ndarray, method: str) -> np.ndarray:
 def preprocess_image(
     image: np.ndarray,
     *,
-    denoise_method: str = "nlm",
+    denoise_method: str = "none",
     enhancement_method: str = "clahe",
     noise_variance: float | None = None,
     seed: int | None = None,
@@ -80,4 +80,3 @@ def preprocess_image(
 
 def canny_edges(image: np.ndarray, low_threshold: int = 50, high_threshold: int = 150):
     return cv2.Canny(to_uint8(image), low_threshold, high_threshold)
-
